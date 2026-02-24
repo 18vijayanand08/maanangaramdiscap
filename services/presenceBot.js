@@ -1,6 +1,6 @@
 // services/presenceBot.js
-import dotenv from "dotenv";
 import { Client, GatewayIntentBits } from "discord.js";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -15,37 +15,35 @@ const client = new Client({
 // Login bot
 client.login(process.env.BOT_TOKEN);
 
-// Bot ready log
+// Bot ready
 client.on("ready", () => {
-  console.log(`Presence Bot Logged in as ${client.user.tag}`);
+  console.log(`Presence bot logged in as ${client.user.tag}`);
 });
 
-/**
- * Fetch basic user info
- */
+// Get basic user info
 export const fetchDiscordUser = async (userId) => {
-  const user = await client.users.fetch(userId);
+  try {
+    const user = await client.users.fetch(userId);
 
-  return {
-    id: user.id,
-    username: user.username,
-    avatar: user.avatar
-      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
-      : null
-  };
+    return {
+      user_id: user.id,
+      username: user.username,
+      avatar: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+    };
+  } catch (err) {
+    console.error("Fetch user error:", err);
+    return null;
+  }
 };
 
-/**
- * Fetch presence (online/offline + activity)
- */
+// Get presence (online/offline/activity)
 export const fetchPresence = async (userId) => {
   try {
-    const guild = await client.guilds.fetch(process.env.GUILD_ID);
-
-    // Fetch member and presence
+    const guild = await client.guilds.fetch(process.env.SERVER_ID);
     const member = await guild.members.fetch(userId);
 
-    if (!member.presence) {
+    const presence = member.presence;
+    if (!presence) {
       return {
         status: "offline",
         custom_status: null,
@@ -53,17 +51,13 @@ export const fetchPresence = async (userId) => {
       };
     }
 
-    const presence = member.presence;
-    const activity = presence.activities?.[0] || null;
-
     return {
       status: presence.status,
-      custom_status: activity?.state || null,
-      activity: activity?.name || null
+      custom_status: presence.activities[0]?.state || null,
+      activity: presence.activities[0]?.name || null
     };
-
   } catch (err) {
-    console.log("Presence Fetch Error:", err.message);
+    console.error("Presence fetch error:", err);
     return {
       status: "offline",
       custom_status: null,
