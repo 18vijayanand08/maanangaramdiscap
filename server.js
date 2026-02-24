@@ -7,25 +7,27 @@ dotenv.config();
 
 const app = express();
 
-// ENABLE CORS FOR EVERYONE (FIXES YOUR ERROR)
+// ---- FIX CORS COMPLETELY ---- //
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 }));
+app.options("*", cors()); // Important
+// ------------------------------ //
 
 app.use(express.json());
 
 // Routes
 app.use("/api/staff", staffRoutes);
 
-// Root
+// Root Test Endpoint
 app.get("/", (req, res) => {
   res.send("Discord Staff API Running 🚀");
 });
 
-// Start
+// Start Server
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () =>
-  console.log(`Backend running on port ${PORT} 🔥`)
-);
+app.listen(PORT, () => {
+  console.log(`Backend running on port ${PORT} 🔥`);
+});
